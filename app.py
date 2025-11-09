@@ -185,6 +185,7 @@ if st.session_state.system_ready:
     # Process query
     if ask_button and question:
         with st.spinner("🔎 Searching agricultural knowledge base and generating answer..."):
+            # START OF TRY BLOCK
             try:
                 result = st.session_state.qa_system.answer_query(
                     question,
@@ -212,13 +213,90 @@ if st.session_state.system_ready:
                 if result.get('weather'):
                     st.markdown("### 🌤️ Current Weather Conditions")
                     weather = result['weather']
-                    col1, col2, col3, col4 = st.columns(4)
+                    w_col1, w_col2, w_col3, w_col4 = st.columns(4)
 
-                    with col1:
+                    with w_col1:
                         st.metric("🌡️ Temperature", f"{weather['temperature']}°C")
-                    with col2:
+                    with w_col2:
                         st.metric("💧 Humidity", f"{weather['humidity']}%")
-                    with col3:
+                    with w_col3:
                         st.metric("☁️ Conditions", weather['description'])
-                    with col4:
-                        st.metric
+                    with w_col4:
+                        st.metric("🌧️ Rainfall", f"{weather['rainfall']}mm")
+
+                # Display sources
+                st.markdown("### 📚 Information Sources")
+                st.info("The answer above is based on the following government documents:")
+                for i, source in enumerate(result['sources'], 1):
+                    st.markdown(f"**{i}.** {source}")
+
+                # Success message
+                st.success("✅ Answer generated successfully! You can ask another question above.")
+
+                # Download button (optional)
+                with st.expander("📥 Download Answer (Optional)"):
+                    answer_data = {
+                        'question': question,
+                        'answer': result['answer'],
+                        'sources': result['sources'],
+                        'weather': result.get('weather'),
+                        'location': result['location']
+                    }
+
+                    st.download_button(
+                        "Download as JSON",
+                        data=json.dumps(answer_data, indent=2),
+                        file_name="agriassist_answer.json",
+                        mime="application/json"
+                    )
+
+            # END OF TRY BLOCK - EXCEPT MUST BE HERE
+            except Exception as e:
+                st.error(f"❌ Error processing question: {e}")
+                st.info("Please try rephrasing your question or check if the database was created properly.")
+
+    elif not question and ask_button:
+        st.warning("⚠️ Please enter a question first!")
+
+    # History section
+    if st.session_state.qa_history:
+        st.markdown("---")
+        st.markdown("## 📜 Recent Questions & Answers")
+
+        with st.expander("View History", expanded=False):
+            for i, item in enumerate(st.session_state.qa_history[:5], 1):
+                st.markdown(f"### Q{i}: {item['question']}")
+                st.markdown(f"**Answer:** {item['result']['answer']}")
+                st.markdown("**Sources:**")
+                for source in item['result']['sources']:
+                    st.markdown(f"- {source}")
+                st.markdown("---")
+
+        # Clear history button
+        if st.button("🗑️ Clear History"):
+            st.session_state.qa_history = []
+            st.rerun()
+
+else:
+    st.error("⚠️ System not ready.")
+    st.info("The database should have been created automatically. If you see this message, there may be memory constraints on Streamlit Cloud.")
+
+    with st.expander("📋 Deployment Tips"):
+        st.markdown("""
+        **For Streamlit Cloud deployment with large PDFs:**
+
+        1. **Reduce PDF size**: Use only 1-2 smaller PDFs for demo
+        2. **Use Git LFS**: For larger databases
+        3. **Pre-build locally**: Build `db/` folder locally and upload with Git LFS
+
+        **For local use:** Run `python ingest.py` first, then `streamlit run app.py`
+        """)
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #666; padding: 1rem;'>
+    <p>🌾 AgriAssist - Empowering Farmers with Knowledge</p>
+    <p style='font-size: 0.8rem;'>Educational Project | Data from Government Agricultural Advisories</p>
+</div>
+""", unsafe_allow_html=True)
