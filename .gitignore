@@ -8,9 +8,6 @@ venv/
 env/
 ENV/
 
-# Database (too large for GitHub)
-db/
-
 # IDE
 .vscode/
 .idea/
