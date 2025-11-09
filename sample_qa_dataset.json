@@ -1,0 +1,183 @@
+{
+  "dataset_name": "AgriAssist Q&A Dataset",
+  "description": "Sample agricultural Q&A pairs for farmer queries",
+  "total_pairs": 20,
+  "categories": ["crops", "seasons", "pests", "fertilizers", "irrigation", "weather"],
+  "qa_pairs": [
+    {
+      "id": 1,
+      "category": "crops",
+      "question": "What crops are suitable for monsoon season?",
+      "answer": "Monsoon season is ideal for rice, maize, cotton, soybeans, groundnut, and various pulses like moong and urad. These kharif crops thrive with adequate rainfall and warm temperatures.",
+      "keywords": ["monsoon", "kharif", "rice", "cotton"],
+      "weather_dependent": true
+    },
+    {
+      "id": 2,
+      "category": "crops",
+      "question": "Which vegetables grow well in winter?",
+      "answer": "Winter vegetables include cabbage, cauliflower, carrots, peas, spinach, radish, and tomatoes. These rabi season crops prefer cooler temperatures for optimal growth.",
+      "keywords": ["winter", "rabi", "vegetables"],
+      "weather_dependent": true
+    },
+    {
+      "id": 3,
+      "category": "pests",
+      "question": "How to control pests in wheat crops?",
+      "answer": "For wheat pests, use integrated pest management: monitor fields regularly, use resistant varieties, apply neem-based pesticides, and maintain proper field sanitation. Chemical pesticides should be used as last resort following recommendations.",
+      "keywords": ["pests", "wheat", "IPM"],
+      "weather_dependent": false
+    },
+    {
+      "id": 4,
+      "category": "fertilizers",
+      "question": "What is the best fertilizer for rice cultivation?",
+      "answer": "Rice requires NPK fertilizers with emphasis on nitrogen. Apply urea in split doses: basal dose at planting, and top dressing at tillering and panicle initiation stages. Zinc and phosphorus are also important for paddy.",
+      "keywords": ["fertilizer", "rice", "NPK", "urea"],
+      "weather_dependent": false
+    },
+    {
+      "id": 5,
+      "category": "seasons",
+      "question": "When to sow cotton seeds?",
+      "answer": "Cotton should be sown in April-May for kharif season when soil temperature reaches 20-25°C. Ensure adequate soil moisture before sowing. Delay sowing beyond May reduces yield potential.",
+      "keywords": ["cotton", "sowing", "timing"],
+      "weather_dependent": true
+    },
+    {
+      "id": 6,
+      "category": "irrigation",
+      "question": "What is the irrigation schedule for tomatoes?",
+      "answer": "Tomatoes need regular irrigation. Water immediately after transplanting, then irrigate every 5-7 days depending on soil type and weather. Drip irrigation is most efficient. Reduce watering during fruit ripening.",
+      "keywords": ["irrigation", "tomatoes", "water"],
+      "weather_dependent": true
+    },
+    {
+      "id": 7,
+      "category": "crops",
+      "question": "How to increase wheat yield?",
+      "answer": "To increase wheat yield: use certified seeds, timely sowing (November), balanced fertilization, 4-6 irrigations at critical stages, weed management, and disease control. Proper land preparation is crucial.",
+      "keywords": ["wheat", "yield", "management"],
+      "weather_dependent": false
+    },
+    {
+      "id": 8,
+      "category": "weather",
+      "question": "What to do if rainfall is delayed?",
+      "answer": "During delayed rainfall: opt for short-duration varieties, practice dry sowing techniques, conserve soil moisture through mulching, adopt contingency crops, and consider drought-resistant crops like millets.",
+      "keywords": ["drought", "rainfall", "contingency"],
+      "weather_dependent": true
+    },
+    {
+      "id": 9,
+      "category": "fertilizers",
+      "question": "Benefits of organic fertilizers?",
+      "answer": "Organic fertilizers improve soil structure, increase water retention, provide slow-release nutrients, enhance microbial activity, reduce chemical dependency, and improve long-term soil health and crop quality.",
+      "keywords": ["organic", "fertilizer", "soil health"],
+      "weather_dependent": false
+    },
+    {
+      "id": 10,
+      "category": "pests",
+      "question": "How to identify leaf blight disease?",
+      "answer": "Leaf blight shows brown/tan spots on leaves with yellow halos, lesions may merge causing leaf death. Occurs in warm humid conditions. Control through resistant varieties, crop rotation, and fungicide application if severe.",
+      "keywords": ["disease", "blight", "identification"],
+      "weather_dependent": true
+    },
+    {
+      "id": 11,
+      "category": "crops",
+      "question": "Is maize suitable for all seasons?",
+      "answer": "Maize grows in kharif (June-September) and rabi (October-January) seasons. Kharif maize has higher yield potential. Choose varieties based on season - hybrids for kharif, composites for rabi.",
+      "keywords": ["maize", "season", "varieties"],
+      "weather_dependent": true
+    },
+    {
+      "id": 12,
+      "category": "irrigation",
+      "question": "Water requirements for paddy cultivation?",
+      "answer": "Paddy requires continuous flooding (5-10 cm water) during vegetative stage. Total water need is 1200-1500 mm. Critical stages are transplanting, tillering, flowering. Drain field 10 days before harvest.",
+      "keywords": ["paddy", "water", "flooding"],
+      "weather_dependent": false
+    },
+    {
+      "id": 13,
+      "category": "fertilizers",
+      "question": "Nitrogen deficiency symptoms in crops?",
+      "answer": "Nitrogen deficiency shows as yellowing of older leaves (chlorosis), stunted growth, thin stems, early maturity, and reduced yield. Apply nitrogen fertilizers or organic matter to correct.",
+      "keywords": ["nitrogen", "deficiency", "symptoms"],
+      "weather_dependent": false
+    },
+    {
+      "id": 14,
+      "category": "crops",
+      "question": "How to grow pulses in rainfed areas?",
+      "answer": "In rainfed areas, grow drought-tolerant pulses like chickpea, pigeonpea, or lentils. Practice moisture conservation through ridges, use short-duration varieties, seed treatment, and proper spacing for better yield.",
+      "keywords": ["pulses", "rainfed", "drought"],
+      "weather_dependent": true
+    },
+    {
+      "id": 15,
+      "category": "pests",
+      "question": "Organic pest control methods?",
+      "answer": "Organic pest control includes neem oil spray, pheromone traps, introduction of natural predators, crop rotation, companion planting, wood ash application, and garlic-chili spray for common pests.",
+      "keywords": ["organic", "pest control", "natural"],
+      "weather_dependent": false
+    },
+    {
+      "id": 16,
+      "category": "weather",
+      "question": "Preparing for extreme heat conditions?",
+      "answer": "During extreme heat: irrigate early morning/evening, apply mulch to conserve moisture, use shade nets for vegetables, spray water on leaves, ensure adequate soil moisture, and delay non-essential field operations.",
+      "keywords": ["heat", "temperature", "protection"],
+      "weather_dependent": true
+    },
+    {
+      "id": 17,
+      "category": "crops",
+      "question": "Intercropping benefits and examples?",
+      "answer": "Intercropping increases land productivity, reduces pest/disease risk, improves soil fertility. Examples: maize+soybean, sugarcane+onion, cotton+mungbean, coconut+cocoa. Ensures better resource utilization.",
+      "keywords": ["intercropping", "mixed farming", "productivity"],
+      "weather_dependent": false
+    },
+    {
+      "id": 18,
+      "category": "irrigation",
+      "question": "Drip irrigation advantages?",
+      "answer": "Drip irrigation saves 30-70% water, delivers water directly to roots, reduces weed growth, prevents water logging, allows fertigation, suitable for all soil types, increases yield by 20-50%.",
+      "keywords": ["drip", "irrigation", "water saving"],
+      "weather_dependent": false
+    },
+    {
+      "id": 19,
+      "category": "fertilizers",
+      "question": "When to apply potash fertilizer?",
+      "answer": "Apply potash (K) as basal dose before sowing/planting mixed with soil. Critical for root crops, pulses, and oilseeds. Improves disease resistance, drought tolerance, and crop quality.",
+      "keywords": ["potash", "potassium", "timing"],
+      "weather_dependent": false
+    },
+    {
+      "id": 20,
+      "category": "weather",
+      "question": "Crop protection during heavy rainfall?",
+      "answer": "During heavy rainfall: ensure proper drainage, apply fungicides preventively, stake tall crops, cover vegetables if possible, delay fertilizer application, and monitor for disease outbreak after rains.",
+      "keywords": ["rainfall", "flooding", "protection"],
+      "weather_dependent": true
+    }
+  ],
+  "metadata": {
+    "created_date": "2025-11-09",
+    "data_sources": [
+      "Government Agricultural Advisories",
+      "Indian Meteorological Department (IMD)",
+      "State Agriculture Department Guidelines"
+    ],
+    "languages_supported": ["English"],
+    "future_enhancements": [
+      "Regional language translation",
+      "Voice input/output",
+      "Image-based crop disease detection",
+      "Real-time price information"
+    ]
+  }
+}
