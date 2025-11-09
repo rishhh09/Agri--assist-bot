@@ -1,8 +1,8 @@
-# app.py
+# app.py - Cloud Ready Version
 import streamlit as st
-from query import AgriAssistQuery
 import json
 import os
+import sys
 
 # Page config
 st.set_page_config(
@@ -10,6 +10,51 @@ st.set_page_config(
     page_icon="🌾",
     layout="wide"
 )
+
+# Check if database exists, if not create it
+DB_DIRECTORY = "db"
+if not os.path.exists(DB_DIRECTORY):
+    st.warning("🔄 First time setup: Creating database... This may take 2-3 minutes.")
+    st.info("📂 Processing PDFs from data folder...")
+    
+    try:
+        # Import and run ingestion
+        from langchain_community.document_loaders import PyPDFDirectoryLoader
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        from langchain_community.embeddings import SentenceTransformerEmbeddings
+        from langchain_community.vectorstores import Chroma
+        
+        with st.spinner("Loading PDFs..."):
+            loader = PyPDFDirectoryLoader("data/")
+            documents = loader.load()
+            st.success(f"✓ Loaded {len(documents)} pages")
+        
+        with st.spinner("Splitting into chunks..."):
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            chunks = text_splitter.split_documents(documents)
+            st.success(f"✓ Created {len(chunks)} chunks")
+        
+        with st.spinner("Creating vector database (this takes longest)..."):
+            embedding_model = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+            db = Chroma.from_documents(chunks, embedding_model, persist_directory=DB_DIRECTORY)
+            st.success("✓ Database created!")
+        
+        st.balloons()
+        st.info("🎉 Setup complete! Please refresh the page to start using AgriAssist.")
+        st.stop()
+        
+    except Exception as e:
+        st.error(f"❌ Error creating database: {e}")
+        st.code(str(e))
+        st.info("This might be due to memory limits on Streamlit Cloud. Try using fewer/smaller PDFs.")
+        st.stop()
+
+# Now load the query system
+try:
+    from query import AgriAssistQuery
+except ImportError as e:
+    st.error(f"Error importing query module: {e}")
+    st.stop()
 
 # Custom CSS
 st.markdown("""
@@ -62,7 +107,7 @@ if 'qa_system' not in st.session_state:
             st.session_state.system_ready = True
         except Exception as e:
             st.error(f"Error loading system: {e}")
-            st.info("Please run `python ingest.py` first to create the database.")
+            st.code(str(e))
             st.session_state.system_ready = False
 
 if 'qa_history' not in st.session_state:
@@ -174,9 +219,9 @@ if st.session_state.system_ready:
                 st.markdown("## 📖 Your Answer")
                 st.markdown(f"""
                 <div class="answer-box">
-                    <strong>Question:</strong> {question}<br><br>
-                    <strong>Answer:</strong><br>
-                    {result["answer"]}
+                    <strong style="color: #1B5E20;">Question:</strong> <span style="color: #000;">{question}</span><br><br>
+                    <strong style="color: #1B5E20;">Answer:</strong><br>
+                    <span style="color: #000;">{result["answer"]}</span>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -248,8 +293,19 @@ if st.session_state.system_ready:
             st.rerun()
 
 else:
-    st.error("⚠️ System not ready. Please run `python ingest.py` first to create the database.")
-    st.code("python ingest.py", language="bash")
+    st.error("⚠️ System not ready.")
+    st.info("The database should have been created automatically. If you see this message, there may be memory constraints on Streamlit Cloud.")
+    
+    with st.expander("📋 Deployment Tips"):
+        st.markdown("""
+        **For Streamlit Cloud deployment with large PDFs:**
+        
+        1. **Reduce PDF size**: Use only 1-2 smaller PDFs for demo
+        2. **Use Git LFS**: For larger databases
+        3. **Pre-build locally**: Build `db/` folder locally and upload with Git LFS
+        
+        **For local use:** Run `python ingest.py` first, then `streamlit run app.py`
+        """)
 
 # Footer
 st.markdown("---")
