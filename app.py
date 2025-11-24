@@ -1,302 +1,154 @@
-# app.py - Cloud Ready Version (No Auto-Ingest)
 import streamlit as st
-import json
 import os
-import sys
+from query import AgriAssistQuery
 
-# Page config
+# PAGE CONFIG
 st.set_page_config(
-    page_title="AgriAssist - Farmer Q&A",
+    page_title="AgriAssist - AI Farming Assistant",
     page_icon="🌾",
     layout="wide"
 )
 
-# ------------------------------------------------------------
-# CRITICAL CHANGE: Database must exist beforehand
-# ------------------------------------------------------------
-DB_DIRECTORY = "db"
-if not os.path.exists(DB_DIRECTORY):
-    st.error("🚨 Database not found!")
-    st.warning("For Cloud deployment, you MUST build the database locally first.")
-    st.markdown("""
-    ### How to fix this:
-    1. Run `python ingest.py` on your local machine.
-    2. This will create a `db/` folder.
-    3. Upload this `db/` folder to your GitHub repository.
-    4. Redeploy the app.
-    """)
-    st.stop()
-# ------------------------------------------------------------
-
-# Now load the query system
-try:
-    from query import AgriAssistQuery
-except ImportError as e:
-    st.error(f"Error importing query module: {e}")
-    st.stop()
-
-# Custom CSS
-st.markdown("""
+st.markdown(
+    """
     <style>
-    .main-header {
-        font-size: 3rem;
-        color: #2E7D32;
-        text-align: center;
-        margin-bottom: 1rem;
+    .main-container {
+        padding: 20px;
     }
-    .subtitle {
-        text-align: center;
-        color: #666;
-        margin-bottom: 2rem;
+
+    /* Weather Card */
+    .weather-card {
+        background-color: #fff5e5;
+        padding: 18px;
+        border-radius: 12px;
+        border-left: 5px solid #ffaa2b;
+        margin-bottom: 15px;
+        color: #333333 !important; /* DARK TEXT */
     }
+
+    /* Answer Box */
     .answer-box {
-        background-color: #E8F5E9;
-        padding: 2rem;
-        border-radius: 10px;
-        border-left: 5px solid #2E7D32;
-        font-size: 1.2rem;
-        line-height: 1.8;
-        margin: 1rem 0;
-        color: #000000;
+        background-color: #f8f8f8;
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid #ddd;
+        color: #222222 !important;  /* DARK TEXT */
+        font-size: 1.05rem;
+        line-height: 1.6;
     }
-    .weather-box {
-        background-color: #E3F2FD;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-top: 1rem;
-    }
+
+    /* Sources Box */
     .source-box {
-        background-color: #FFF3E0;
-        padding: 1rem;
+        background-color: #eaf4ff;
+        padding: 15px;
         border-radius: 10px;
-        margin-top: 1rem;
+        margin-top: 10px;
+        border-left: 4px solid #2b8aff;
+        color: #1a1a1a !important; /* DARK TEXT */
+        font-size: 0.9rem;
     }
-    .big-font {
-        font-size: 1.3rem !important;
-        font-weight: 500;
+
+    /* Label colors */
+    h4, h3, h2, h1, label {
+        color: #FF9600 !important;
     }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# Initialize session state with caching
-@st.cache_resource(show_spinner="🌱 Loading AI Models...")
-def get_qa_system():
-    # This will only run ONCE and stay in memory
+
+# --------------------------------------------------------------
+# 🌿 TITLE
+# --------------------------------------------------------------
+st.title("🌾 AgriAssist — Smart Agriculture Q&A with Gemini 2.5 Pro")
+
+# --------------------------------------------------------------
+# 🌿 INITIALIZE SYSTEM (cached)
+# --------------------------------------------------------------
+@st.cache_resource
+def load_system():
     return AgriAssistQuery()
 
-try:
-    if 'qa_system' not in st.session_state:
-        st.session_state.qa_system = get_qa_system()
-        st.session_state.system_ready = True
-except Exception as e:
-    st.error(f"Error loading system: {e}")
-    st.info("Try rebooting the app in standard settings if standard memory is exceeded.")
-    st.stop()
+qa_system = load_system()
 
-if 'qa_history' not in st.session_state:
-    st.session_state.qa_history = []
+# --------------------------------------------------------------
+# 🌿 SIDEBAR SETTINGS
+# --------------------------------------------------------------
+st.sidebar.header("⚙️ Settings")
 
-# Header
-st.markdown('<h1 class="main-header">🌾 AgriAssist</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Crop Q&A from Government PDFs & Weather Data</p>', unsafe_allow_html=True)
+include_weather = st.sidebar.checkbox("Enable Weather", value=True)
 
-# Sidebar
-with st.sidebar:
-    st.header("⚙️ Settings")
+location = st.sidebar.text_input("Enter City for Weather:", value="Delhi")
 
-    location = st.text_input(
-        "📍 Location (for weather)",
-        value="Delhi",
-        help="Enter your city name"
-    )
+st.sidebar.markdown("---")
+st.sidebar.write("Built with **Gemini-2.5-Pro**, ChromaDB & Streamlit 💚")
 
-    include_weather = st.checkbox(
-        "Include weather data",
-        value=True,
-        help="Show current weather conditions with answer"
-    )
+# --------------------------------------------------------------
+# 🌿 MAIN INPUT
+# --------------------------------------------------------------
+user_question = st.text_area(
+    "Ask your farming question below:",
+    placeholder="Example: What crops can I grow in monsoon?",
+    height=120
+)
 
-    st.markdown("---")
+if st.button("Get Answer", use_container_width=True):
+    if not user_question.strip():
+        st.warning("Please enter a question!")
+        st.stop()
 
-    st.header("📚 About")
-    st.info("""
-    **AgriAssist** helps farmers get answers to agricultural queries using:
-    - Government agricultural PDFs
-    - Real-time weather data
-    - AI-powered search and answers
-
-    Ask questions about crops, seasons, pests, fertilizers, and more!
-    """)
-
-    st.markdown("---")
-
-    # Sample questions
-    st.header("💡 Sample Questions")
-    sample_questions = [
-        "What crops are suitable for monsoon?",
-        "How to control pests in wheat?",
-        "Best fertilizer for rice cultivation?",
-        "When to sow cotton seeds?",
-        "Irrigation schedule for vegetables?",
-        "Post-harvest storage methods?",
-        "PM Kisan scheme details?",
-        "Drip irrigation benefits?"
-    ]
-
-    for q in sample_questions:
-        if st.button(q, key=f"sample_{q}", use_container_width=True):
-            st.session_state.current_question = q
-            st.rerun()
-
-# Main content
-if st.session_state.system_ready:
-
-    # Question input
-    col1, col2 = st.columns([4, 1])
-
-    with col1:
-        question = st.text_input(
-            "🔍 Ask your agricultural question:",
-            value=st.session_state.get('current_question', ''),
-            placeholder="e.g., What is the best time to plant tomatoes?",
-            key="question_input"
+    # Process Query
+    with st.spinner("🌱 Thinking… Fetching info from PDFs + Gemini…"):
+        response = qa_system.answer_query(
+            question=user_question,
+            location=location,
+            include_weather=include_weather
         )
 
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        ask_button = st.button("🚀 Get Answer", type="primary", use_container_width=True)
+    # ----------------------------------------------------------
+    # 🌦 WEATHER OUTPUT
+    # ----------------------------------------------------------
+    if include_weather and response["weather"]:
+        w = response["weather"]
+        st.markdown(
+            f"""
+            <div class="weather-card">
+                <h4>🌦 Weather in {response['location']}</h4>
+                <b>Temperature:</b> {w['temperature']}°C<br>
+                <b>Humidity:</b> {w['humidity']}<br>
+                <b>Condition:</b> {w['description']}<br>
+                <b>Rainfall:</b> {w['rainfall']} mm
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-    # Clear the current_question after displaying
-    if 'current_question' in st.session_state:
-        del st.session_state.current_question
-
-    # Language selector
-    language = st.selectbox(
-        "🌐 Language (Display)",
-        ["English", "हिंदी (Hindi)", "বাংলা (Bengali)", "ਪੰਜਾਬੀ (Punjabi)", "తెలుగు (Telugu)"],
-        help="Note: Core answers are in English. Translation feature for future enhancement."
+    # ----------------------------------------------------------
+    # 🌿 FINAL ANSWER
+    # ----------------------------------------------------------
+    st.markdown("### 🧠 Answer")
+    st.markdown(
+        f"<div class='answer-box'>{response['answer']}</div>",
+        unsafe_allow_html=True
     )
 
-    if language != "English":
-        st.info("📝 Translation feature coming soon! Currently showing results in English.")
+    # ----------------------------------------------------------
+    # 📘 SOURCES
+    # ----------------------------------------------------------
+    if response["sources"]:
+        st.markdown("### 📘 Sources Used")
+        for src in response["sources"]:
+            st.markdown(
+                f"<div class='source-box'>{src}</div>",
+                unsafe_allow_html=True
+            )
 
-    st.markdown("---")
-
-    # Process query
-    if ask_button and question:
-        with st.spinner("🔎 Searching agricultural knowledge base and generating answer..."):
-            # START OF TRY BLOCK
-            try:
-                result = st.session_state.qa_system.answer_query(
-                    question,
-                    location=location,
-                    include_weather=include_weather
-                )
-
-                # Save to history
-                st.session_state.qa_history.insert(0, {
-                    'question': question,
-                    'result': result
-                })
-
-                # ============ MAIN ANSWER DISPLAY ============
-                st.markdown("## 📖 Your Answer")
-                st.markdown(f"""
-                <div class="answer-box">
-                    <strong style="color: #1B5E20;">Question:</strong> <span style="color: #000;">{question}</span><br><br>
-                    <strong style="color: #1B5E20;">Answer:</strong><br>
-                    <span style="color: #000;">{result["answer"]}</span>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Display weather in columns
-                if result.get('weather'):
-                    st.markdown("### 🌤️ Current Weather Conditions")
-                    weather = result['weather']
-                    w_col1, w_col2, w_col3, w_col4 = st.columns(4)
-
-                    with w_col1:
-                        st.metric("🌡️ Temperature", f"{weather['temperature']}°C")
-                    with w_col2:
-                        st.metric("💧 Humidity", f"{weather['humidity']}%")
-                    with w_col3:
-                        st.metric("☁️ Conditions", weather['description'])
-                    with w_col4:
-                        st.metric("🌧️ Rainfall", f"{weather['rainfall']}mm")
-
-                # Display sources
-                st.markdown("### 📚 Information Sources")
-                st.info("The answer above is based on the following government documents:")
-                for i, source in enumerate(result['sources'], 1):
-                    st.markdown(f"**{i}.** {source}")
-
-                # Success message
-                st.success("✅ Answer generated successfully! You can ask another question above.")
-
-                # Download button (optional)
-                with st.expander("📥 Download Answer (Optional)"):
-                    answer_data = {
-                        'question': question,
-                        'answer': result['answer'],
-                        'sources': result['sources'],
-                        'weather': result.get('weather'),
-                        'location': result['location']
-                    }
-
-                    st.download_button(
-                        "Download as JSON",
-                        data=json.dumps(answer_data, indent=2),
-                        file_name="agriassist_answer.json",
-                        mime="application/json"
-                    )
-
-            # END OF TRY BLOCK - EXCEPT MUST BE HERE
-            except Exception as e:
-                st.error(f"❌ Error processing question: {e}")
-                st.info("Please try rephrasing your question or check if the database was created properly.")
-
-    elif not question and ask_button:
-        st.warning("⚠️ Please enter a question first!")
-
-    # History section
-    if st.session_state.qa_history:
-        st.markdown("---")
-        st.markdown("## 📜 Recent Questions & Answers")
-
-        with st.expander("View History", expanded=False):
-            for i, item in enumerate(st.session_state.qa_history[:5], 1):
-                st.markdown(f"### Q{i}: {item['question']}")
-                st.markdown(f"**Answer:** {item['result']['answer']}")
-                st.markdown("**Sources:**")
-                for source in item['result']['sources']:
-                    st.markdown(f"- {source}")
-                st.markdown("---")
-
-        # Clear history button
-        if st.button("🗑️ Clear History"):
-            st.session_state.qa_history = []
-            st.rerun()
-
-else:
-    st.error("⚠️ System not ready.")
-    st.info("The database should have been created automatically. If you see this message, there may be memory constraints on Streamlit Cloud.")
-
-    with st.expander("📋 Deployment Tips"):
-        st.markdown("""
-        **For Streamlit Cloud deployment with large PDFs:**
-
-        1. **Reduce PDF size**: Use only 1-2 smaller PDFs for demo
-        2. **Use Git LFS**: For larger databases
-        3. **Pre-build locally**: Build `db/` folder locally and upload with Git LFS
-
-        **For local use:** Run `python ingest.py` first, then `streamlit run app.py`
-        """)
-
-# Footer
+# --------------------------------------------------------------
+# FOOTER
+# --------------------------------------------------------------
 st.markdown("---")
-st.markdown("""
-<div style='text-align: center; color: #666; padding: 1rem;'>
-    <p>🌾 AgriAssist - Empowering Farmers with Knowledge</p>
-    <p style='font-size: 0.8rem;'>Educational Project | Data from Government Agricultural Advisories</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<center>🌱 Built with ❤️ for farmers using Gemini-2.5-Pro + RAG</center>",
+    unsafe_allow_html=True
+)
