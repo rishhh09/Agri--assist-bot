@@ -183,11 +183,13 @@ Provide clear, practical, and reliable guidance based ONLY on the given PDF cont
             "location": location,
         }
 
-
-# -----------------------------------------------------------
 # Test Mode
-# -----------------------------------------------------------
 if __name__ == "__main__":
     bot = AgriAssistQuery()
     res = bot.answer_query("What crops are suitable for monsoon?")
     print(res["answer"])
+    
+    
+    
+    
+    
